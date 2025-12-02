@@ -182,6 +182,17 @@ const sensors = {
     connected: false,
 
     async connect() {
+        // Check for Web Bluetooth support
+        if (!navigator.bluetooth) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                alert('O Safari no iOS não suporta Bluetooth Web.\n\nPara conectar seus sensores no iPhone, instale o navegador "Bluefy" na App Store e abra este site por lá.');
+            } else {
+                alert('Seu navegador ou dispositivo não suporta Bluetooth Web.\n\nTente usar o Chrome no Android ou Desktop.');
+            }
+            return;
+        }
+
         try {
             // Request Bluetooth Device
             // Note: This requires HTTPS or localhost

@@ -934,6 +934,7 @@ async function loadState() {
     } catch (error) {
         console.error('Critical error in loadState:', error);
     } finally {
+        updateCreditsUI(); // Force UI update
         renderHistory();
         renderWorkouts();
         renderAchievements();
