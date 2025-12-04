@@ -1,6 +1,64 @@
 import './style.css';
 import { supabase } from './supabaseClient.js';
 
+// ==================== INTERNATIONALIZATION ====================
+function updateLanguage(lang) {
+    const t = window.translations[lang];
+    if (!t) return;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+            el.textContent = t[key];
+        }
+    });
+
+    // Save language preference
+    localStorage.setItem('language', lang);
+}
+
+// Detect browser language or use saved preference
+const savedLang = localStorage.getItem('language');
+const browserLang = navigator.language || navigator.userLanguage;
+let currentLang = savedLang || (browserLang.startsWith('pt') ? 'pt-BR' : browserLang.startsWith('es') ? 'es-ES' : 'en-US');
+
+// Apply language when DOM is ready
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.translations) {
+        updateLanguage(currentLang);
+    }
+
+    // Language Switcher Events
+    const langBtns = document.querySelectorAll('.btn-lang');
+
+    function updateActiveLangButton(lang) {
+        langBtns.forEach(btn => {
+            if (btn.getAttribute('data-lang') === lang) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // Set initial active button
+    updateActiveLangButton(currentLang);
+
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            updateLanguage(lang);
+            currentLang = lang; // Update global variable
+            updateActiveLangButton(lang);
+        });
+    });
+});
+
+// Expose for external use
+window.updateLanguage = updateLanguage;
+window.currentLang = currentLang;
+
+
 // State Management
 const state = {
     user: {

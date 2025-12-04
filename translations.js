@@ -1,0 +1,268 @@
+const translations = {
+    'pt-BR': {
+        // Navbar
+        'nav_theme_label': 'Alternar Tema',
+        'nav_profile': 'Editar Perfil',
+        'nav_logout': 'Sair',
+
+        // Welcome
+        'welcome_title': 'Descubra Sua',
+        'welcome_title_highlight': 'Verdadeira Potência',
+        'welcome_subtitle': 'Transforme seu celular em um medidor de potência profissional.',
+        'welcome_login': 'Entrar',
+        'welcome_signup': 'Criar Conta',
+
+        // Auth
+        'auth_welcome_back': 'Bem-vindo de Volta',
+        'auth_create_account': 'Criar Conta',
+        'auth_sync_pedals': 'Sincronize seus pedais entre dispositivos.',
+        'auth_email_label': 'E-mail',
+        'auth_password_label': 'Senha',
+        'auth_btn_login': 'Entrar',
+        'auth_btn_signup': 'Cadastrar',
+        'auth_switch_signup': 'Precisa de uma conta? Cadastre-se',
+        'auth_switch_login': 'Já tem uma conta? Entre',
+        'auth_back': 'Voltar',
+
+        // Dashboard
+        'dash_indoor_mode': 'Modo Indoor 🏠',
+        'dash_outdoor_mode': 'Modo Outdoor (GPS) 🛰️',
+        'dash_slope_title': 'Inclinação Simulada',
+        'dash_power': 'Potência',
+        'dash_cadence': 'Cadência',
+        'dash_speed': 'Velocidade',
+        'dash_calories': 'Calorias',
+        'dash_start_ride': 'Iniciar Pedal',
+        'dash_stop_ride': 'Parar Pedal',
+        'dash_workouts': '🏋️ Treinos',
+        'dash_history': '📜 Histórico',
+        'dash_achievements': '🏆 Conquistas',
+
+        // Plans
+        'plans_title': 'Planos & Créditos',
+        'plans_credits_available': 'Créditos Disponíveis',
+        'plans_amateur': 'Amador',
+        'plans_pro': 'PRO',
+        'plans_month': '/mês',
+        'plans_subscribe_amateur': 'Assinar Amador',
+        'plans_subscribe_pro': 'Assinar PRO',
+        'plans_recommended': 'RECOMENDADO',
+        'plans_feature_credits_30': '✅ 30 Créditos de Treino',
+        'plans_feature_credits_60': '✅ 60 Créditos de Treino',
+        'plans_feature_achievements_locked': '❌ Conquistas Bloqueadas',
+        'plans_feature_achievements_unlocked': '✅ Conquistas Liberadas',
+        'plans_feature_creator_locked': '❌ Criador de Treinos Bloqueado',
+        'plans_feature_creator_unlocked': '✅ Criador de Treinos Liberado',
+
+        // Views Titles & Buttons
+        'view_history_title': 'Histórico de Pedais',
+        'view_back': 'Voltar',
+
+        'view_session_title': 'Detalhes da Sessão',
+        'view_session_close': 'Fechar',
+        'view_session_avg_power': 'Potência Média',
+        'view_session_avg_speed': 'Velocidade Média',
+        'view_session_duration': 'Duração',
+        'view_session_export_csv': 'Exportar CSV',
+        'view_session_export_gpx': 'Exportar GPX (Strava)',
+
+        'view_workouts_title': 'Selecionar Treino',
+        'view_workouts_create_btn': '+ Criar Personalizado',
+
+        'view_create_workout_title': 'Criar Treino',
+        'view_create_workout_name': 'Título',
+        'view_create_workout_desc': 'Descrição',
+        'view_create_workout_json': 'Intervalos (JSON)',
+        'view_create_workout_cancel': 'Cancelar',
+        'view_create_workout_save': 'Salvar Treino',
+
+        'view_profile_title': 'Meu Perfil',
+        'view_profile_photo': '📷 Alterar Foto',
+        'view_profile_name': 'Nome',
+        'view_profile_weight': 'Peso (kg)',
+        'view_profile_height': 'Altura (cm)',
+        'view_profile_bike_type': 'Tipo de Bike',
+        'view_profile_crank': 'Tamanho do Pedivela (mm)',
+        'view_profile_save': 'Salvar Alterações',
+
+        'view_achievements_title': 'Conquistas',
+    },
+    'en-US': {
+        // Navbar
+        'nav_theme_label': 'Toggle Theme',
+        'nav_profile': 'Edit Profile',
+        'nav_logout': 'Logout',
+
+        // Welcome
+        'welcome_title': 'Discover Your',
+        'welcome_title_highlight': 'True Power',
+        'welcome_subtitle': 'Turn your phone into a professional power meter.',
+        'welcome_login': 'Login',
+        'welcome_signup': 'Sign Up',
+
+        // Auth
+        'auth_welcome_back': 'Welcome Back',
+        'auth_create_account': 'Create Account',
+        'auth_sync_pedals': 'Sync your rides across devices.',
+        'auth_email_label': 'Email',
+        'auth_password_label': 'Password',
+        'auth_btn_login': 'Login',
+        'auth_btn_signup': 'Sign Up',
+        'auth_switch_signup': 'Need an account? Sign Up',
+        'auth_switch_login': 'Already have an account? Login',
+        'auth_back': 'Back',
+
+        // Dashboard
+        'dash_indoor_mode': 'Indoor Mode 🏠',
+        'dash_outdoor_mode': 'Outdoor Mode (GPS) 🛰️',
+        'dash_slope_title': 'Simulated Slope',
+        'dash_power': 'Power',
+        'dash_cadence': 'Cadence',
+        'dash_speed': 'Speed',
+        'dash_calories': 'Calories',
+        'dash_start_ride': 'Start Ride',
+        'dash_stop_ride': 'Stop Ride',
+        'dash_workouts': '🏋️ Workouts',
+        'dash_history': '📜 History',
+        'dash_achievements': '🏆 Achievements',
+
+        // Plans
+        'plans_title': 'Plans & Credits',
+        'plans_credits_available': 'Credits Available',
+        'plans_amateur': 'Amateur',
+        'plans_pro': 'PRO',
+        'plans_month': '/month',
+        'plans_subscribe_amateur': 'Subscribe Amateur',
+        'plans_subscribe_pro': 'Subscribe PRO',
+        'plans_recommended': 'RECOMMENDED',
+        'plans_feature_credits_30': '✅ 30 Ride Credits',
+        'plans_feature_credits_60': '✅ 60 Ride Credits',
+        'plans_feature_achievements_locked': '❌ Achievements Locked',
+        'plans_feature_achievements_unlocked': '✅ Achievements Unlocked',
+        'plans_feature_creator_locked': '❌ Workout Creator Locked',
+        'plans_feature_creator_unlocked': '✅ Workout Creator Unlocked',
+
+        // Views Titles & Buttons
+        'view_history_title': 'Ride History',
+        'view_back': 'Back',
+
+        'view_session_title': 'Session Details',
+        'view_session_close': 'Close',
+        'view_session_avg_power': 'Avg Power',
+        'view_session_avg_speed': 'Avg Speed',
+        'view_session_duration': 'Duration',
+        'view_session_export_csv': 'Export CSV',
+        'view_session_export_gpx': 'Export GPX (Strava)',
+
+        'view_workouts_title': 'Select Workout',
+        'view_workouts_create_btn': '+ Create Custom',
+
+        'view_create_workout_title': 'Create Workout',
+        'view_create_workout_name': 'Title',
+        'view_create_workout_desc': 'Description',
+        'view_create_workout_json': 'Intervals (JSON)',
+        'view_create_workout_cancel': 'Cancel',
+        'view_create_workout_save': 'Save Workout',
+
+        'view_profile_title': 'My Profile',
+        'view_profile_photo': '📷 Change Photo',
+        'view_profile_name': 'Name',
+        'view_profile_weight': 'Weight (kg)',
+        'view_profile_height': 'Height (cm)',
+        'view_profile_bike_type': 'Bike Type',
+        'view_profile_crank': 'Crank Length (mm)',
+        'view_profile_save': 'Save Changes',
+
+        'view_achievements_title': 'Achievements',
+    },
+    'es-ES': {
+        // Navbar
+        'nav_theme_label': 'Alternar Tema',
+        'nav_profile': 'Editar Perfil',
+        'nav_logout': 'Cerrar Sesión',
+
+        // Welcome
+        'welcome_title': 'Descubre Tu',
+        'welcome_title_highlight': 'Verdadera Potencia',
+        'welcome_subtitle': 'Transforma tu móvil en un medidor de potencia profesional.',
+        'welcome_login': 'Entrar',
+        'welcome_signup': 'Crear Cuenta',
+
+        // Auth
+        'auth_welcome_back': 'Bienvenido de Nuevo',
+        'auth_create_account': 'Crear Cuenta',
+        'auth_sync_pedals': 'Sincroniza tus pedaleos entre dispositivos.',
+        'auth_email_label': 'Correo',
+        'auth_password_label': 'Contraseña',
+        'auth_btn_login': 'Entrar',
+        'auth_btn_signup': 'Registrarse',
+        'auth_switch_signup': '¿Necesitas una cuenta? Regístrate',
+        'auth_switch_login': '¿Ya tienes cuenta? Entra',
+        'auth_back': 'Volver',
+
+        // Dashboard
+        'dash_indoor_mode': 'Modo Interior 🏠',
+        'dash_outdoor_mode': 'Modo Exterior (GPS) 🛰️',
+        'dash_slope_title': 'Pendiente Simulada',
+        'dash_power': 'Potencia',
+        'dash_cadence': 'Cadencia',
+        'dash_speed': 'Velocidad',
+        'dash_calories': 'Calorías',
+        'dash_start_ride': 'Iniciar Pedaleo',
+        'dash_stop_ride': 'Detener Pedaleo',
+        'dash_workouts': '🏋️ Entrenamientos',
+        'dash_history': '📜 Historial',
+        'dash_achievements': '🏆 Logros',
+
+        // Plans
+        'plans_title': 'Planes y Créditos',
+        'plans_credits_available': 'Créditos Disponibles',
+        'plans_amateur': 'Aficionado',
+        'plans_pro': 'PRO',
+        'plans_month': '/mes',
+        'plans_subscribe_amateur': 'Suscribir Aficionado',
+        'plans_subscribe_pro': 'Suscribir PRO',
+        'plans_recommended': 'RECOMENDADO',
+        'plans_feature_credits_30': '✅ 30 Créditos de Entrenamiento',
+        'plans_feature_credits_60': '✅ 60 Créditos de Entrenamiento',
+        'plans_feature_achievements_locked': '❌ Logros Bloqueados',
+        'plans_feature_achievements_unlocked': '✅ Logros Desbloqueados',
+        'plans_feature_creator_locked': '❌ Creador de Entrenamientos Bloqueado',
+        'plans_feature_creator_unlocked': '✅ Creador de Entrenamientos Desbloqueado',
+
+        // Views Titles & Buttons
+        'view_history_title': 'Historial de Pedaleos',
+        'view_back': 'Volver',
+
+        'view_session_title': 'Detalles de la Sesión',
+        'view_session_close': 'Cerrar',
+        'view_session_avg_power': 'Potencia Media',
+        'view_session_avg_speed': 'Velocidad Media',
+        'view_session_duration': 'Duración',
+        'view_session_export_csv': 'Exportar CSV',
+        'view_session_export_gpx': 'Exportar GPX (Strava)',
+
+        'view_workouts_title': 'Seleccionar Entrenamiento',
+        'view_workouts_create_btn': '+ Crear Personalizado',
+
+        'view_create_workout_title': 'Crear Entrenamiento',
+        'view_create_workout_name': 'Título',
+        'view_create_workout_desc': 'Descripción',
+        'view_create_workout_json': 'Intervalos (JSON)',
+        'view_create_workout_cancel': 'Cancelar',
+        'view_create_workout_save': 'Guardar Entrenamiento',
+
+        'view_profile_title': 'Mi Perfil',
+        'view_profile_photo': '📷 Cambiar Foto',
+        'view_profile_name': 'Nombre',
+        'view_profile_weight': 'Peso (kg)',
+        'view_profile_height': 'Altura (cm)',
+        'view_profile_bike_type': 'Tipo de Bici',
+        'view_profile_crank': 'Longitud Biela (mm)',
+        'view_profile_save': 'Guardar Cambios',
+
+        'view_achievements_title': 'Logros',
+    }
+};
+
+window.translations = translations;

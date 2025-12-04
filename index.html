@@ -21,6 +21,14 @@
     <nav class="navbar">
       <div class="logo">WattFlow</div>
       <div class="nav-controls">
+        <div class="lang-controls" style="display: flex; gap: 8px; margin-right: 1rem;">
+          <button class="btn-icon btn-lang" data-lang="pt-BR" title="Português"
+            style="font-size: 1.2rem; padding: 4px;">🇧🇷</button>
+          <button class="btn-icon btn-lang" data-lang="es-ES" title="Español"
+            style="font-size: 1.2rem; padding: 4px;">🇪🇸</button>
+          <button class="btn-icon btn-lang" data-lang="en-US" title="English"
+            style="font-size: 1.2rem; padding: 4px;">🇺🇸</button>
+        </div>
         <div id="nav-credits-container"
           style="display: none; align-items: center; margin-right: 1rem; cursor: pointer; font-size: 0.9rem;">
           <span style="margin-right: 4px;">💎</span>
@@ -404,6 +412,12 @@
 
     </main>
   </div>
+
+  <script src="/translations.js"></script>
+
+
+  <script src="/apply-i18n.js"></script>
+
 
   <script type="module" src="/main.js"></script>
 </body>
