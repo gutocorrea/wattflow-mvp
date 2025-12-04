@@ -1,8 +1,21 @@
 import './style.css';
 import { supabase } from './supabaseClient.js';
-import { applyI18nAttributes, updateLanguage } from './i18n.js';
 
 // ==================== INTERNATIONALIZATION ====================
+function updateLanguage(lang) {
+    const t = window.translations[lang];
+    if (!t) return;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+            el.textContent = t[key];
+        }
+    });
+
+    // Save language preference
+    localStorage.setItem('language', lang);
+}
 
 // Detect browser language or use saved preference
 const savedLang = localStorage.getItem('language');
@@ -11,11 +24,9 @@ let currentLang = savedLang || (browserLang.startsWith('pt') ? 'pt-BR' : browser
 
 // Apply language when DOM is ready
 window.addEventListener('DOMContentLoaded', () => {
-    // Apply data-i18n attributes first
-    applyI18nAttributes();
-
-    // Then translate
-    updateLanguage(currentLang);
+    if (window.translations) {
+        updateLanguage(currentLang);
+    }
 
     // Language Switcher Events
     const langBtns = document.querySelectorAll('.btn-lang');
@@ -43,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Expose for external use if needed (debugging)
+// Expose for external use
 window.updateLanguage = updateLanguage;
 window.currentLang = currentLang;
 

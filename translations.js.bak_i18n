@@ -1,4 +1,4 @@
-export const translations = {
+const translations = {
     'pt-BR': {
         // Navbar
         'nav_theme_label': 'Alternar Tema',
@@ -264,3 +264,5 @@ export const translations = {
         'view_achievements_title': 'Logros',
     }
 };
+
+window.translations = translations;
