@@ -268,6 +268,7 @@ const sensors = {
         speed: 0,
         cadence: 0,
         power: 0,
+        battery: null, // Battery level (0-100%)
         lastCrankTime: 0,
         lastCrankRevs: 0,
         lastWheelTime: 0,
@@ -339,6 +340,22 @@ const sensors = {
 
             if (this.sensorType) {
                 this.connected = true;
+
+                // Try to read battery level
+                try {
+                    const batteryService = await this.server.getPrimaryService('battery_service');
+                    const batteryCharacteristic = await batteryService.getCharacteristic('battery_level');
+                    const batteryValue = await batteryCharacteristic.readValue();
+                    this.data.battery = batteryValue.getUint8(0);
+                    console.log(`🔋 Bateria: ${this.data.battery}%`);
+
+                    // Update battery display
+                    this.updateBatteryDisplay();
+                } catch (e) {
+                    console.log('Nível de bateria não disponível');
+                    this.data.battery = null;
+                }
+
                 const sensorNames = {
                     'power': 'Medidor de Potência',
                     'csc': 'Sensor de Cadência/Velocidade',
@@ -462,6 +479,7 @@ const sensors = {
                 speed: 0,
                 cadence: 0,
                 power: 0,
+                battery: null,
                 lastCrankTime: 0,
                 lastCrankRevs: 0,
                 lastWheelTime: 0,
@@ -469,7 +487,35 @@ const sensors = {
                 wheelCircumference: 2.105
             };
             document.getElementById('btn-connect-bluetooth').textContent = '📡';
+            this.updateBatteryDisplay();
             console.log('Sensor desconectado');
+            alert('🔌 Sensor desconectado');
+        }
+    },
+
+    updateBatteryDisplay() {
+        const batteryContainer = document.getElementById('sensor-battery');
+        if (!batteryContainer) return;
+
+        if (this.data.battery !== null && this.connected) {
+            const batteryLevel = this.data.battery;
+            let batteryIcon = '🔋';
+            let batteryColor = '#22c55e'; // green
+
+            if (batteryLevel <= 20) {
+                batteryIcon = '🪫';
+                batteryColor = '#ef4444'; // red
+            } else if (batteryLevel <= 50) {
+                batteryColor = '#f59e0b'; // orange
+            }
+
+            batteryContainer.innerHTML = `
+                <span style="font-size: 1.2rem;">${batteryIcon}</span>
+                <span style="color: ${batteryColor}; font-weight: 600;">${batteryLevel}%</span>
+            `;
+            batteryContainer.style.display = 'flex';
+        } else {
+            batteryContainer.style.display = 'none';
         }
     }
 };
@@ -1287,9 +1333,42 @@ async function handleLogout() {
 init();
 initAuth();
 
+// Create Bluetooth button and battery display dynamically
+const navControls = document.querySelector('.nav-controls');
+if (navControls && !document.getElementById('sensor-battery')) {
+    // Create battery display
+    const batteryDiv = document.createElement('div');
+    batteryDiv.id = 'sensor-battery';
+    batteryDiv.style.display = 'none';
+    batteryDiv.style.alignItems = 'center';
+    batteryDiv.style.gap = '0.5rem';
+    batteryDiv.style.marginRight = '1rem';
+    batteryDiv.style.fontSize = '0.9rem';
+
+    // Create Bluetooth button
+    const btButton = document.createElement('button');
+    btButton.id = 'btn-connect-bluetooth';
+    btButton.className = 'btn-icon';
+    btButton.setAttribute('aria-label', 'Conectar Sensor Bluetooth');
+    btButton.textContent = '📡';
+
+    // Insert before theme toggle button
+    const themeButton = document.getElementById('btn-theme-toggle');
+    if (themeButton) {
+        navControls.insertBefore(batteryDiv, themeButton);
+        navControls.insertBefore(btButton, themeButton);
+    }
+}
+
 // Event Listeners
 document.getElementById('btn-connect-bluetooth').addEventListener('click', () => {
-    sensors.connect();
+    if (sensors.connected) {
+        // Disconnect if already connected
+        sensors.disconnect();
+    } else {
+        // Connect if not connected
+        sensors.connect();
+    }
 });
 
 // Auth Listeners
