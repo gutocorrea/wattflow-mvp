@@ -430,19 +430,19 @@ const sensors = {
 
     getReading(currentSpeed) {
         if (!this.connected) {
-            // Simulate data when not connected
+            // Return zeros when not connected - NO SIMULATION
             return {
-                speed: currentSpeed,
-                cadence: 80 + (Math.random() * 10 - 5), // 75-85 RPM
-                power: 0 // Will be calculated by physics
+                speed: 0,
+                cadence: 0,
+                power: 0
             };
         }
 
-        // Return real sensor data
+        // Return ONLY real sensor data
         return {
-            speed: this.data.speed > 0 ? this.data.speed : currentSpeed,
-            cadence: this.data.cadence > 0 ? this.data.cadence : 0,
-            power: this.data.power // If power meter connected, use real power
+            speed: this.data.speed || 0,
+            cadence: this.data.cadence || 0,
+            power: this.data.power || 0
         };
     },
 
@@ -704,6 +704,12 @@ let currentIntervalIndex = 0;
 let intervalTimeRemaining = 0;
 
 function startRide(isWorkout = false, workoutData = null) {
+    // Check if sensors are connected
+    if (!sensors.connected) {
+        alert('⚠️ ATENÇÃO: Nenhum sensor Bluetooth conectado!\n\nPara usar dados reais, conecte seus sensores antes de iniciar o pedal.\n\nClique no botão 📡 para conectar.');
+        return;
+    }
+
     state.ride.active = true;
     state.ride.startTime = Date.now();
     state.ride.dataPoints = []; // Reset data points
@@ -815,22 +821,8 @@ function updateRideMetrics() {
 
     const reading = sensors.getReading(currentSpeedVal);
 
-    // Determine Power: Use real power meter data if available, otherwise calculate
-    let currentPower;
-    if (sensors.connected && sensors.sensorType && sensors.sensorType.includes('power') && reading.power > 0) {
-        // Use real power from power meter
-        currentPower = Math.round(reading.power);
-    } else {
-        // Calculate Power based on Physics
-        const calculatedPower = calculatePower(
-            reading.speed,
-            state.user.weight || 75,
-            state.bike.type || 'road',
-            currentSlope
-        );
-        currentPower = Math.round(calculatedPower);
-    }
-
+    // Use ONLY real sensor data - NO CALCULATIONS
+    const currentPower = Math.round(reading.power);
     const currentSpeed = parseFloat(reading.speed.toFixed(1));
     const currentCadence = Math.round(reading.cadence);
 
