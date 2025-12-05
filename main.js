@@ -1232,9 +1232,20 @@ async function loadState() {
         console.error('Critical error in loadState:', error);
     } finally {
         updateCreditsUI(); // Force UI update
+        updateAvatarUI(); // Update Avatar in Navbar
         renderHistory();
         renderWorkouts();
         renderAchievements();
+    }
+}
+
+function updateAvatarUI() {
+    const navAvatar = document.getElementById('avatarImage');
+    if (navAvatar) {
+        navAvatar.src = state.user.avatar || DEFAULT_AVATAR;
+        navAvatar.onerror = function () {
+            this.src = DEFAULT_AVATAR;
+        };
     }
 }
 
@@ -1509,6 +1520,8 @@ document.getElementById('btn-cancel-create')?.addEventListener('click', () => {
 forms.createWorkout?.addEventListener('submit', saveCustomWorkout);
 
 // Profile Functions
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
 function openProfile() {
     // Populate form with current values
     document.getElementById('edit-name').value = state.user.name || '';
@@ -1518,9 +1531,16 @@ function openProfile() {
     document.getElementById('edit-crank-length').value = state.bike.crankLength || 172.5;
 
     // Load avatar if exists
-    if (state.user.avatar) {
-        const avatarPreview = document.getElementById('avatarPreviewImage');
-        if (avatarPreview) avatarPreview.src = state.user.avatar;
+    const avatarPreview = document.getElementById('avatarPreviewImage');
+    if (avatarPreview) {
+        // Reset to default first to avoid showing old broken image
+        avatarPreview.src = state.user.avatar || DEFAULT_AVATAR;
+
+        // Add error handler
+        avatarPreview.onerror = function () {
+            this.src = DEFAULT_AVATAR;
+            console.log('Avatar image failed to load, using default.');
+        };
     }
 
     navigateTo('profile');
@@ -1530,8 +1550,9 @@ async function uploadAvatar(file) {
     if (!state.session || !state.session.user) return null;
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${state.session.user.id} -${Date.now()}.${fileExt} `;
-    const filePath = `${fileName} `;
+    // Fixed: Removed extra spaces in filename
+    const fileName = `${state.session.user.id}-${Date.now()}.${fileExt}`;
+    const filePath = fileName;
 
     try {
         const { error: uploadError } = await supabase.storage
@@ -1583,12 +1604,7 @@ async function saveProfileChanges(e) {
 
         // Update display
         updateAuthUI();
-
-        // Update avatar in navbar if changed
-        if (state.user.avatar) {
-            const navAvatar = document.getElementById('avatarImage');
-            if (navAvatar) navAvatar.src = state.user.avatar;
-        }
+        updateAvatarUI(); // Update avatar in navbar
 
         // Show success message
         alert('Perfil atualizado com sucesso!');
