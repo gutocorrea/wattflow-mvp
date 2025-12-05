@@ -288,13 +288,20 @@ const sensors = {
         }
 
         try {
-            // Request Bluetooth Device - accept both CSC and Power sensors
+            // Request Bluetooth Device - accept ANY cycling sensor
+            // Includes filters by name for XCADEY/XPOWER devices
             this.device = await navigator.bluetooth.requestDevice({
                 filters: [
                     { services: ['cycling_speed_and_cadence'] },
-                    { services: ['cycling_power'] }
+                    { services: ['cycling_power'] },
+                    { namePrefix: 'XPOWER' },
+                    { namePrefix: 'XCADEY' },
+                    { namePrefix: 'X-POWER' },
+                    { namePrefix: 'Magene' },
+                    { namePrefix: 'Wahoo' },
+                    { namePrefix: 'Garmin' }
                 ],
-                optionalServices: ['cycling_speed_and_cadence', 'cycling_power']
+                optionalServices: ['cycling_speed_and_cadence', 'cycling_power', 'battery_service', 'device_information']
             });
 
             this.server = await this.device.gatt.connect();
