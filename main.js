@@ -1345,18 +1345,11 @@ if (navControls && !document.getElementById('sensor-battery')) {
     batteryDiv.style.marginRight = '1rem';
     batteryDiv.style.fontSize = '0.9rem';
 
-    // Create Bluetooth button
-    const btButton = document.createElement('button');
-    btButton.id = 'btn-connect-bluetooth';
-    btButton.className = 'btn-icon';
-    btButton.setAttribute('aria-label', 'Conectar Sensor Bluetooth');
-    btButton.textContent = '📡';
 
     // Insert before theme toggle button
     const themeButton = document.getElementById('btn-theme-toggle');
     if (themeButton) {
         navControls.insertBefore(batteryDiv, themeButton);
-        navControls.insertBefore(btButton, themeButton);
     }
 }
 
