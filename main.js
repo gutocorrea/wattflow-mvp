@@ -17,11 +17,41 @@ window.addEventListener('DOMContentLoaded', () => {
     // Then translate
     updateLanguage(currentLang);
 
-    // Language Switcher Events
-    const langBtns = document.querySelectorAll('.btn-lang');
+    // Language Dropdown Logic
+    const langToggle = document.getElementById('btn-lang-toggle');
+    const langMenu = document.getElementById('lang-menu');
+    const langOptions = document.querySelectorAll('.lang-option');
+    const currentFlag = document.getElementById('current-lang-flag');
 
-    function updateActiveLangButton(lang) {
-        langBtns.forEach(btn => {
+    // Toggle Menu
+    if (langToggle && langMenu) {
+        langToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            langMenu.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', () => {
+            langMenu.classList.add('hidden');
+        });
+
+        // Prevent menu closing when clicking inside
+        langMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    function updateActiveLangOption(lang) {
+        // Update Flag in Toggle Button
+        const flags = {
+            'pt-BR': '🇧🇷',
+            'es-ES': '🇪🇸',
+            'en-US': '🇺🇸'
+        };
+        if (currentFlag) currentFlag.textContent = flags[lang] || '🇧🇷';
+
+        // Update Active Class in Menu
+        langOptions.forEach(btn => {
             if (btn.getAttribute('data-lang') === lang) {
                 btn.classList.add('active');
             } else {
@@ -30,15 +60,17 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Set initial active button
-    updateActiveLangButton(currentLang);
+    // Set initial state
+    updateActiveLangOption(currentLang);
 
-    langBtns.forEach(btn => {
+    // Handle Language Selection
+    langOptions.forEach(btn => {
         btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
             updateLanguage(lang);
-            currentLang = lang; // Update global variable
-            updateActiveLangButton(lang);
+            currentLang = lang;
+            updateActiveLangOption(lang);
+            if (langMenu) langMenu.classList.add('hidden'); // Close menu after selection
         });
     });
 });

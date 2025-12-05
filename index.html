@@ -21,13 +21,22 @@
     <nav class="navbar">
       <div class="logo">WattFlow</div>
       <div class="nav-controls">
-        <div class="lang-controls" style="display: flex; gap: 8px; margin-right: 1rem;">
-          <button class="btn-icon btn-lang" data-lang="pt-BR" title="Português"
-            style="font-size: 1.2rem; padding: 4px;">🇧🇷</button>
-          <button class="btn-icon btn-lang" data-lang="es-ES" title="Español"
-            style="font-size: 1.2rem; padding: 4px;">🇪🇸</button>
-          <button class="btn-icon btn-lang" data-lang="en-US" title="English"
-            style="font-size: 1.2rem; padding: 4px;">🇺🇸</button>
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown-container">
+          <button id="btn-lang-toggle" class="btn-icon btn-lang-toggle" aria-label="Selecionar Idioma">
+            <span id="current-lang-flag">🇧🇷</span>
+          </button>
+          <div id="lang-menu" class="lang-menu hidden">
+            <button class="lang-option" data-lang="pt-BR">
+              <span>🇧🇷</span> Português
+            </button>
+            <button class="lang-option" data-lang="es-ES">
+              <span>🇪🇸</span> Español
+            </button>
+            <button class="lang-option" data-lang="en-US">
+              <span>🇺🇸</span> English
+            </button>
+          </div>
         </div>
         <div id="nav-credits-container"
           style="display: none; align-items: center; margin-right: 1rem; cursor: pointer; font-size: 0.9rem;">
