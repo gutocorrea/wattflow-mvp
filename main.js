@@ -256,9 +256,24 @@ function calculatePower(speedKmh, weightKg, bikeType, slope) {
 const sensors = {
     device: null,
     server: null,
-    service: null,
-    characteristic: null,
+    cscService: null,
+    powerService: null,
+    cscCharacteristic: null,
+    powerCharacteristic: null,
     connected: false,
+    sensorType: null, // 'csc', 'power', or 'both'
+
+    // Real-time sensor data
+    data: {
+        speed: 0,
+        cadence: 0,
+        power: 0,
+        lastCrankTime: 0,
+        lastCrankRevs: 0,
+        lastWheelTime: 0,
+        lastWheelRevs: 0,
+        wheelCircumference: 2.105 // meters (700x25c tire, adjustable)
+    },
 
     async connect() {
         // Check for Web Bluetooth support
@@ -273,43 +288,182 @@ const sensors = {
         }
 
         try {
-            // Request Bluetooth Device
-            // Note: This requires HTTPS or localhost
+            // Request Bluetooth Device - accept both CSC and Power sensors
             this.device = await navigator.bluetooth.requestDevice({
-                filters: [{ services: ['cycling_speed_and_cadence'] }]
+                filters: [
+                    { services: ['cycling_speed_and_cadence'] },
+                    { services: ['cycling_power'] }
+                ],
+                optionalServices: ['cycling_speed_and_cadence', 'cycling_power']
             });
 
             this.server = await this.device.gatt.connect();
-            this.service = await this.server.getPrimaryService('cycling_speed_and_cadence');
-            this.characteristic = await this.service.getCharacteristic('csc_measurement');
 
-            await this.characteristic.startNotifications();
-            this.characteristic.addEventListener('characteristicvaluechanged', this.handleValueChanged);
+            // Try to connect to Power Meter first (priority)
+            try {
+                this.powerService = await this.server.getPrimaryService('cycling_power');
+                this.powerCharacteristic = await this.powerService.getCharacteristic('cycling_power_measurement');
+                await this.powerCharacteristic.startNotifications();
+                this.powerCharacteristic.addEventListener('characteristicvaluechanged',
+                    this.handlePowerValueChanged.bind(this));
+                this.sensorType = 'power';
+                console.log('✅ Power Meter conectado');
+            } catch (e) {
+                console.log('Nenhum Power Meter encontrado');
+            }
 
-            this.connected = true;
-            alert('Sensores Conectados!');
-            document.getElementById('btn-connect-bluetooth').textContent = '✅';
+            // Try to connect to CSC sensor
+            try {
+                this.cscService = await this.server.getPrimaryService('cycling_speed_and_cadence');
+                this.cscCharacteristic = await this.cscService.getCharacteristic('csc_measurement');
+                await this.cscCharacteristic.startNotifications();
+                this.cscCharacteristic.addEventListener('characteristicvaluechanged',
+                    this.handleCSCValueChanged.bind(this));
+
+                if (this.sensorType === 'power') {
+                    this.sensorType = 'both';
+                } else {
+                    this.sensorType = 'csc';
+                }
+                console.log('✅ Sensor CSC conectado');
+            } catch (e) {
+                console.log('Nenhum sensor CSC encontrado');
+            }
+
+            if (this.sensorType) {
+                this.connected = true;
+                const sensorNames = {
+                    'power': 'Medidor de Potência',
+                    'csc': 'Sensor de Cadência/Velocidade',
+                    'both': 'Power Meter + Sensor CSC'
+                };
+                alert(`✅ ${sensorNames[this.sensorType]} conectado com sucesso!`);
+                document.getElementById('btn-connect-bluetooth').textContent = '✅';
+            } else {
+                alert('❌ Nenhum sensor compatível encontrado no dispositivo.');
+            }
+
         } catch (error) {
             console.error('Bluetooth Error:', error);
             alert('Erro ao conectar Bluetooth: ' + error.message);
         }
     },
 
-    handleValueChanged(event) {
-        // Parse CSC Data (Complex standard, simplified here)
-        // In a real app, you need to handle wheel revolutions and crank revolutions
-        // For MVP, we might simulate if no sensor
-        console.log('Data received');
+    handlePowerValueChanged(event) {
+        const value = event.target.value;
+        const flags = value.getUint8(0);
+
+        // Bit 0: Pedal Power Balance Present
+        // Bit 1: Pedal Power Balance Reference
+        // Bit 2: Accumulated Torque Present
+        // Bit 3: Accumulated Torque Source
+        // Bit 4-5: Reserved
+
+        let offset = 1;
+
+        // Instantaneous Power (always present) - Int16
+        const instantPower = value.getInt16(offset, true);
+        this.data.power = instantPower;
+        offset += 2;
+
+        console.log(`💪 Potência: ${instantPower}W`);
+
+        // Optional: Parse other fields if needed (torque, balance, etc.)
+    },
+
+    handleCSCValueChanged(event) {
+        const value = event.target.value;
+        const flags = value.getUint8(0);
+
+        // Bit 0: Wheel Revolution Data Present
+        // Bit 1: Crank Revolution Data Present
+        const wheelDataPresent = flags & 0x01;
+        const crankDataPresent = flags & 0x02;
+
+        let offset = 1;
+
+        // Parse Wheel Revolution Data
+        if (wheelDataPresent) {
+            const wheelRevs = value.getUint32(offset, true);
+            offset += 4;
+            const wheelTime = value.getUint16(offset, true); // 1/1024 seconds
+            offset += 2;
+
+            if (this.data.lastWheelRevs > 0) {
+                const revDiff = wheelRevs - this.data.lastWheelRevs;
+                const timeDiff = (wheelTime - this.data.lastWheelTime) / 1024; // seconds
+
+                if (timeDiff > 0 && revDiff > 0) {
+                    // Speed = (revolutions * circumference) / time
+                    const speedMs = (revDiff * this.data.wheelCircumference) / timeDiff;
+                    this.data.speed = speedMs * 3.6; // Convert m/s to km/h
+                    console.log(`🚴 Velocidade: ${this.data.speed.toFixed(1)} km/h`);
+                }
+            }
+
+            this.data.lastWheelRevs = wheelRevs;
+            this.data.lastWheelTime = wheelTime;
+        }
+
+        // Parse Crank Revolution Data
+        if (crankDataPresent) {
+            const crankRevs = value.getUint16(offset, true);
+            offset += 2;
+            const crankTime = value.getUint16(offset, true); // 1/1024 seconds
+            offset += 2;
+
+            if (this.data.lastCrankRevs > 0) {
+                const revDiff = crankRevs - this.data.lastCrankRevs;
+                const timeDiff = (crankTime - this.data.lastCrankTime) / 1024; // seconds
+
+                if (timeDiff > 0 && revDiff > 0) {
+                    // Cadence = (revolutions / time) * 60
+                    this.data.cadence = (revDiff / timeDiff) * 60;
+                    console.log(`⚙️ Cadência: ${this.data.cadence.toFixed(0)} RPM`);
+                }
+            }
+
+            this.data.lastCrankRevs = crankRevs;
+            this.data.lastCrankTime = crankTime;
+        }
     },
 
     getReading(currentSpeed) {
-        // Mock reading if not connected, or return real data
-        // For this MVP, we will simulate power based on the slider/input speed if not connected
+        if (!this.connected) {
+            // Simulate data when not connected
+            return {
+                speed: currentSpeed,
+                cadence: 80 + (Math.random() * 10 - 5), // 75-85 RPM
+                power: 0 // Will be calculated by physics
+            };
+        }
+
+        // Return real sensor data
         return {
-            speed: currentSpeed,
-            cadence: 80 + (Math.random() * 5),
-            power: 0 // Calculated by main loop
+            speed: this.data.speed > 0 ? this.data.speed : currentSpeed,
+            cadence: this.data.cadence > 0 ? this.data.cadence : 0,
+            power: this.data.power // If power meter connected, use real power
         };
+    },
+
+    disconnect() {
+        if (this.device && this.device.gatt.connected) {
+            this.device.gatt.disconnect();
+            this.connected = false;
+            this.sensorType = null;
+            this.data = {
+                speed: 0,
+                cadence: 0,
+                power: 0,
+                lastCrankTime: 0,
+                lastCrankRevs: 0,
+                lastWheelTime: 0,
+                lastWheelRevs: 0,
+                wheelCircumference: 2.105
+            };
+            document.getElementById('btn-connect-bluetooth').textContent = '📡';
+            console.log('Sensor desconectado');
+        }
     }
 };
 
@@ -661,27 +815,35 @@ function updateRideMetrics() {
 
     const reading = sensors.getReading(currentSpeedVal);
 
-    // Calculate Power based on Physics
-    const power = calculatePower(
-        reading.speed,
-        state.user.weight || 75,
-        state.bike.type || 'road',
-        currentSlope
-    );
+    // Determine Power: Use real power meter data if available, otherwise calculate
+    let currentPower;
+    if (sensors.connected && sensors.sensorType && sensors.sensorType.includes('power') && reading.power > 0) {
+        // Use real power from power meter
+        currentPower = Math.round(reading.power);
+    } else {
+        // Calculate Power based on Physics
+        const calculatedPower = calculatePower(
+            reading.speed,
+            state.user.weight || 75,
+            state.bike.type || 'road',
+            currentSlope
+        );
+        currentPower = Math.round(calculatedPower);
+    }
 
-    const currentPower = Math.round(power);
     const currentSpeed = parseFloat(reading.speed.toFixed(1));
+    const currentCadence = Math.round(reading.cadence);
 
     // Store for average calculation
     state.ride.dataPoints.push({
         timestamp: Date.now(),
         power: currentPower,
         speed: currentSpeed,
-        cadence: Math.round(reading.cadence)
+        cadence: currentCadence
     });
 
     displays.power.textContent = currentPower;
-    displays.cadence.textContent = Math.round(reading.cadence);
+    displays.cadence.textContent = currentCadence;
     displays.speed.textContent = currentSpeed;
 
     // Workout Logic
