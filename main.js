@@ -375,7 +375,7 @@ const sensors = {
 
     handlePowerValueChanged(event) {
         const value = event.target.value;
-        const flags = value.getUint8(0);
+        const flags = value.getUint16(0, true);
 
         // Bit 0: Pedal Power Balance Present
         // Bit 1: Pedal Power Balance Reference
@@ -383,7 +383,7 @@ const sensors = {
         // Bit 3: Accumulated Torque Source
         // Bit 4-5: Reserved
 
-        let offset = 1;
+        let offset = 2;
 
         // Instantaneous Power (always present) - Int16
         const instantPower = value.getInt16(offset, true);
