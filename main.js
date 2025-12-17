@@ -100,6 +100,7 @@ const state = {
         dataPoints: [], // Store metrics to calculate average
         intervalId: null,
         slope: 0, // Grade %
+        calories: 0, // Accumulated calories
     },
     history: [],
     customWorkouts: [],
@@ -377,22 +378,73 @@ const sensors = {
         const value = event.target.value;
         const flags = value.getUint16(0, true);
 
-        // Bit 0: Pedal Power Balance Present
-        // Bit 1: Pedal Power Balance Reference
-        // Bit 2: Accumulated Torque Present
-        // Bit 3: Accumulated Torque Source
-        // Bit 4-5: Reserved
+        // Flags Parsing according to GATT Cycling Power Measurement
+        const pedalPowerBalancePresent = flags & 0x01;
+        const accumulatedTorquePresent = flags & 0x04;
+        const wheelRevPresent = flags & 0x10; // Bit 4
+        const crankRevPresent = flags & 0x20; // Bit 5
 
-        let offset = 2;
+        let offset = 2; // Skip Flags (2 bytes)
 
-        // Instantaneous Power (always present) - Int16
+        // 1. Instantaneous Power (SInt16) - Always present
         const instantPower = value.getInt16(offset, true);
         this.data.power = instantPower;
         offset += 2;
 
-        console.log(`💪 Potência: ${instantPower}W`);
+        // 2. Pedal Power Balance (UInt8) - If present
+        if (pedalPowerBalancePresent) {
+            offset += 1;
+        }
 
-        // Optional: Parse other fields if needed (torque, balance, etc.)
+        // 3. Accumulated Torque (UInt16) - If present
+        if (accumulatedTorquePresent) {
+            offset += 2;
+        }
+
+        // 4. Wheel Revolution Data (UInt32 Revs + UInt16 Time) - If present
+        if (wheelRevPresent) {
+            const wheelRevs = value.getUint32(offset, true);
+            offset += 4;
+            const wheelTime = value.getUint16(offset, true); // 1/2048 seconds
+            offset += 2;
+
+            if (this.data.lastWheelRevs > 0) {
+                const revDiff = wheelRevs - this.data.lastWheelRevs;
+                let timeDiff = (wheelTime - this.data.lastWheelTime);
+                if (timeDiff < 0) timeDiff += 65536; // Handle rollover
+                timeDiff /= 2048; // Convert to seconds
+
+                if (timeDiff > 0 && revDiff > 0) {
+                    const speedMs = (revDiff * this.data.wheelCircumference) / timeDiff;
+                    this.data.speed = speedMs * 3.6; // km/h
+                }
+            }
+            this.data.lastWheelRevs = wheelRevs;
+            this.data.lastWheelTime = wheelTime;
+        }
+
+        // 5. Crank Revolution Data (UInt16 Revs + UInt16 Time) - If present
+        if (crankRevPresent) {
+            const crankRevs = value.getUint16(offset, true);
+            offset += 2;
+            const crankTime = value.getUint16(offset, true); // 1/1024 seconds
+            offset += 2;
+
+            if (this.data.lastCrankRevs > 0) {
+                const revDiff = crankRevs - this.data.lastCrankRevs;
+                let timeDiff = (crankTime - this.data.lastCrankTime);
+                if (timeDiff < 0) timeDiff += 65536; // Handle rollover
+                timeDiff /= 1024; // Convert to seconds
+
+                if (timeDiff > 0 && revDiff > 0) {
+                    this.data.cadence = (revDiff / timeDiff) * 60;
+                }
+            }
+            this.data.lastCrankRevs = crankRevs;
+            this.data.lastCrankTime = crankTime;
+        }
+
+        console.log(`💪 P: ${this.data.power}W | ⚙️ C: ${this.data.cadence.toFixed(0)} | 🚴 S: ${this.data.speed.toFixed(1)}`);
     },
 
     handleCSCValueChanged(event) {
@@ -766,6 +818,8 @@ function startRide(isWorkout = false, workoutData = null) {
     state.ride.active = true;
     state.ride.startTime = Date.now();
     state.ride.dataPoints = []; // Reset data points
+    state.ride.calories = 0; // Reset calories
+    if (displays.calories) displays.calories.textContent = '0';
 
     // Resume Audio Context if needed (browser policy)
     if (audioCtx.state === 'suspended') {
@@ -879,6 +933,15 @@ function updateRideMetrics() {
     const currentSpeed = parseFloat(reading.speed.toFixed(1));
     const currentCadence = Math.round(reading.cadence);
 
+    // Calculate Calories (accumulated)
+    // Energy (J) = Power (W) * Time (s)
+    // 1 kcal = 4184 J
+    // Human Efficiency ~24% -> 1 kcal burned ~= 1 kJ work
+    // So: kcal += (Power * 1s) / 1000
+    if (currentPower > 0) {
+        state.ride.calories += (currentPower / 1000);
+    }
+
     // Store for average calculation
     state.ride.dataPoints.push({
         timestamp: Date.now(),
@@ -890,6 +953,9 @@ function updateRideMetrics() {
     displays.power.textContent = currentPower;
     displays.cadence.textContent = currentCadence;
     displays.speed.textContent = currentSpeed;
+    if (displays.calories) {
+        displays.calories.textContent = Math.floor(state.ride.calories);
+    }
 
     // Workout Logic
     if (activeWorkout) {
